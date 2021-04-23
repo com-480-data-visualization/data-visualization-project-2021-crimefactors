@@ -2,7 +2,7 @@
 
 | Student's name | SCIPER |
 | -------------- | ------ |
-| Elena Gazzarini| 335058|
+| Elena Gazzarrini| 335058|
 |Guillaume Augustoni |314052 |
 | | |
 
@@ -31,7 +31,7 @@ This dataset includes data on crime back to 1996 for most departments however, f
 The data is in the form of an excel spreadsheet with one sheet per departement, this form of data is being transformed to a more usable csv format.
 
 
-![Crime 2020](Data/france_crime1996.png "Crime in 1996")
+![Crime 1996](Data/france_crime1996.png "Crime in 1996")
 
 
 ### Population
