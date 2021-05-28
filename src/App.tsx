@@ -28,17 +28,16 @@ interface populationDataPoint {
 function App() {
   const [map, setMap] = useState<Departement | null>(null);
   const [crime, setCrime] = useState<Array<crimeDataPoint> | null>(null);
-  const [migrants, setMigrants] = useState<Array<migrantDataPoint> | null>(
-    null
-  );
-  const [
-    population,
-    setPopulation,
-  ] = useState<Array<populationDataPoint> | null>(null);
+  const [migrants, setMigrants] =
+    useState<Array<migrantDataPoint> | null>(null);
+  const [population, setPopulation] =
+    useState<Array<populationDataPoint> | null>(null);
   const [adjusted, setAdjusted] = useState<Array<dataPoint> | null>(null);
   const [poverty, setPoverty] = useState<Array<dataPoint> | null>(null);
+  const [bac, setBac] = useState<Array<dataPoint> | null>(null);
 
-  const options = ["population", "immigration", "poverty"];
+
+  const options = ["population", "immigration", "poverty", "school success"];
 
   useEffect(() => {
     fetch("departements.geojson")
@@ -46,6 +45,8 @@ function App() {
       .then((response) => setMap(response))
       .catch((error) => console.log("error loading map", error));
   }, []);
+
+
 
   useEffect(() => {
     d3.csv("crime.csv").then((data) => {
@@ -64,6 +65,18 @@ function App() {
         value: Number(d["immigrants_n"]!),
       }));
       setMigrants(migrants);
+    });
+  }, []);
+
+  
+
+  useEffect(() => {
+    d3.csv("bac.csv").then((data) => {
+      let bac = data.map((d) => ({
+        code: d["Dep_number"]!,
+        value: Number(d["General_success"]!),
+      }));
+      setBac(bac);
     });
   }, []);
 
@@ -117,22 +130,28 @@ function App() {
   const [model, setModel] = useState<any>(null);
 
   useEffect(() => {
-    if (migrants && population && crime && poverty) {
-      const b = crime
-        .sort((d1, d2) => d1.code.localeCompare(d2.code))
-        .map((d) => d.value);
+    if (migrants && population && crime && poverty && bac) {
+      
       const sorted_population = population
         .sort((d1, d2) => d1.code.localeCompare(d2.code))
         .map((d) => d.value);
+      const b = crime
+        .sort((d1, d2) => d1.code.localeCompare(d2.code))
+        .map((d, i) => d.value/sorted_population[i]);
       const sorted_migrants = migrants
         .sort((d1, d2) => d1.code.localeCompare(d2.code))
-        .map((d) => d.value);
+        .map((d, i) => d.value/sorted_population[i]);
       const sorted_poverty = poverty
         .sort((d1, d2) => d1.code.localeCompare(d2.code))
         .map((d) => d.value);
+      const sorted_bac = bac
+        .sort((d1, d2) => d1.code.localeCompare(d2.code))
+        .map((d) => d.value);
+      console.log("testing lengths")
       console.log(b.length === sorted_migrants.length);
       console.log(b.length === sorted_population.length);
-      console.log(b.length === sorted_poverty.length);
+      console.log(b.length === sorted_bac.length);
+
 
       let A = b.map((_v) => [1]);
       //"population", "immigration"
@@ -146,6 +165,9 @@ function App() {
       if (checkboxes["poverty"]) {
         A.map((v, i) => v.push(sorted_poverty[i]));
       }
+      if (checkboxes["school success"]) {
+        A.map((v, i) => v.push(sorted_bac[i]));
+      }
       console.clear();
       if (A[0].length >= 2) {
         const model = jStat.models.ols(b, A);
@@ -155,7 +177,7 @@ function App() {
         setModel(null);
       }
     }
-  }, [population, migrants, crime, checkboxes, poverty]);
+  }, [population, migrants, crime, checkboxes, poverty, bac]);
   useEffect(() => {
     if (model && crime) {
       console.log("model and population", model.resid, crime);
@@ -171,8 +193,8 @@ function App() {
 
   //dndin
   /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
-  const [width, ] = useState(600);
-  const [height, ] = useState(500);
+  const [width] = useState(600);
+  const [height] = useState(500);
 
   return (
     <div className="App">
@@ -228,13 +250,12 @@ function App() {
         <div className={"section"}>
           <p>
             R2 : {model && model.R2}, this number is the proportion of the
-            variance in the crime that is predictable from the
-            chosen factors. 
+            variance in the crime that is predictable from the chosen factors.
           </p>
-          <p>
-            The colorscale is changing otherwise a good part of the map would be
-            not distinguishable
-          </p>
+          <p>The colorscale is changing.</p>
+
+          <p></p>
+
           {Object.keys(checkboxes).map((option: string) => Checkbox(option))}
         </div>
         <div className={"section"}>
