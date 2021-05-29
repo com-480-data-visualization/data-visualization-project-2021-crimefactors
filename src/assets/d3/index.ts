@@ -14,6 +14,8 @@ import {
   scaleSequential,
   scaleLinear,
   range,
+  axisBottom,
+  axisLeft,
 } from "d3";
 
 const d3 = {
@@ -34,6 +36,8 @@ const d3 = {
   dsv,
   json,
   select,
+  axisBottom,
+  axisLeft,
 };
 
 export default d3;

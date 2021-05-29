@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Departement } from "./assets/map";
 import { Metropole } from "./france";
+import { ScatterPlot } from "./scatter";
 import { jStat } from "jstat";
 import d3 from "./assets/d3";
 import "./App.css";
@@ -36,8 +37,13 @@ function App() {
   const [poverty, setPoverty] = useState<Array<dataPoint> | null>(null);
   const [bac, setBac] = useState<Array<dataPoint> | null>(null);
 
-
   const options = ["population", "immigration", "poverty", "school success"];
+
+  let optionMap = new Map();
+  optionMap.set("population", population);
+  optionMap.set("immigration", migrants);
+  optionMap.set("poverty", poverty);
+  optionMap.set("school success", bac);
 
   useEffect(() => {
     fetch("departements.geojson")
@@ -45,8 +51,6 @@ function App() {
       .then((response) => setMap(response))
       .catch((error) => console.log("error loading map", error));
   }, []);
-
-
 
   useEffect(() => {
     d3.csv("crime.csv").then((data) => {
@@ -67,8 +71,6 @@ function App() {
       setMigrants(migrants);
     });
   }, []);
-
-  
 
   useEffect(() => {
     d3.csv("bac.csv").then((data) => {
@@ -131,27 +133,25 @@ function App() {
 
   useEffect(() => {
     if (migrants && population && crime && poverty && bac) {
-      
       const sorted_population = population
         .sort((d1, d2) => d1.code.localeCompare(d2.code))
         .map((d) => d.value);
       const b = crime
         .sort((d1, d2) => d1.code.localeCompare(d2.code))
-        .map((d, i) => d.value/sorted_population[i]);
+        .map((d, i) => d.value / sorted_population[i]);
       const sorted_migrants = migrants
         .sort((d1, d2) => d1.code.localeCompare(d2.code))
-        .map((d, i) => d.value/sorted_population[i]);
+        .map((d, i) => d.value / sorted_population[i]);
       const sorted_poverty = poverty
         .sort((d1, d2) => d1.code.localeCompare(d2.code))
         .map((d) => d.value);
       const sorted_bac = bac
         .sort((d1, d2) => d1.code.localeCompare(d2.code))
         .map((d) => d.value);
-      console.log("testing lengths")
+      console.log("testing lengths");
       console.log(b.length === sorted_migrants.length);
       console.log(b.length === sorted_population.length);
       console.log(b.length === sorted_bac.length);
-
 
       let A = b.map((_v) => [1]);
       //"population", "immigration"
@@ -191,10 +191,11 @@ function App() {
     }
   }, [model, crime]);
 
-  //dndin
-  /*eslint no-unused-vars: ["error", { "argsIgnorePattern": "^_" }]*/
   const [width] = useState(600);
   const [height] = useState(500);
+
+  const [scatterPlotSelection, setScatterPlotSelection] = useState(options[0]);
+  const scatterPlotData = optionMap.get(scatterPlotSelection);
 
   return (
     <div className="App">
@@ -265,6 +266,30 @@ function App() {
             cheight={height}
             data={adjusted}
           />
+        </div>
+      </div>
+      <div className={"side_by_side"}>
+        <div className={"section"}>
+          <ScatterPlot
+            cwidth={width}
+            cheight={height}
+            crime={crime}
+            data={scatterPlotData}
+          />
+        </div>
+        <div className={"section"}>
+          <select
+            value={scatterPlotSelection}
+            onChange={(e) => {
+              setScatterPlotSelection(e.target.value);
+            }}
+          >
+            {options.map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
     </div>
