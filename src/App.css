@@ -15,7 +15,7 @@
   align-self: flex-start;
   min-width: 27em;
   padding: 0 1.6em;
-  border-style: dashed;
+  /* border-style: dashed; */
 }
 
 .App .center {
