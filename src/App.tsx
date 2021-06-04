@@ -7,6 +7,7 @@ import { jStat } from "jstat";
 import d3 from "./assets/d3";
 import "./App.css";
 import { Adjusted } from "./adjusted";
+import { color } from "d3-color";
 
 interface dataPoint {
   code: string;
@@ -306,13 +307,16 @@ function App() {
         What factors determine and influence crime rates in the French nation?
       </h2> 
       <p>
-        We often two maps of France shown side by side as a political argument.
-        However limiting ourselves to this limits our understanding. What if
-        other factors are at play ? {selected}
+        As a political argument, often these two maps are shown next to each other to limit immigration, arguing that immigrants
+        are responsible for the crime in France. Hover over the Immigration map to find out the department number for each section on the map. 
       </p>
+     
       <div className={"side_by_side"}>
         <div className={"section"}>
           <h3>Immigrant population</h3>
+          <p>
+            Department number = {selected}
+          </p>
           {map && migrants && (
             <Metropole2
               carte={map}
@@ -325,71 +329,82 @@ function App() {
         </div>
         <div className={"section"}>
           <h3>Number of Crimes</h3>
-          <Metropole carte={map} cwidth={width} cheight={height} data={crime} />
+          <Metropole carte={map} cwidth={width} cheight={height} data={crime}  />
         </div>
       </div>
       <p>
-        Looking at these maps we may arrive at the conclusion that immigrants
-        are responsible for the crime in France. You wouldn't be the only one,
-        as these maps are often used as an argument for reducing migration.
-        However, correlation is not causation there may be hidden causes.
+        However, what if other factors come into play?
+        Correlation is not causation and there might be hidden causes...
       </p>
       <p>
-        Let's look at the most obvious one, population. If more people live in
-        an area, there will probably be more migrants and more crime.
+        The most obvious other paramter that can be used as a counter-argument is POPULATION. 
+        When the population density is higher, there are higher chances of having people who live in precarious conditions, and are therefore more likely to commit crimes.
+
       </p>
       <div className={"center"}>
         <h3>Population</h3>
         <Metropole
           carte={map}
-          cwidth={2 * width}
-          cheight={2 * height}
+          cwidth={1 * width}
+          cheight={1 * height}
           data={population}
         />
       </div>
       <p>
-        Oh dear, we seem to be getting the same map over and over again. Is
-        there no way to find what effect the different variables have on crime ?
-      </p>
-      <p>
-        There is a solution linear regression{" "}
-        <i>explain linear regression and why they are so awesome</i>
-      </p>
+        We investigate the influence that poverty, unemployment and education have on crime rates within different departments. <i>Linear regression</i> is performed on the data, collected from
+        the official INSEE (The National Institute of Statistics and Economic Studies) website, to show the correlation between crime and other factors. 
+        The proportion of the variance in crime rate that is predictable from the chosen factors is investigated. 
 
-      <div className={"side_by_side"}>
+      </p>
+      
+
+      <div className={"center"}>
         <div className={"section"}>
-          <p>
-            R2 : {model && model.R2}, this number is the proportion of the
-            variance in the crime that is predictable from the chosen factors.
-          </p>
-          <p>The colorscale is changing.</p>
+          
+          {/* <p>The colorscale is changing.</p> */}
 
           <p></p>
 
           {Object.keys(checkboxes).map((option: string) => Checkbox(option))}
         </div>
+        <h4>
+          The ratio of crime <i>variance</i> predicted by the factor you just selected is: {model && model.R2} 
+        </h4>
         <div className={"section"}>
           {map && adjusted && crime && <Adjusted
             carte={map}
-            cwidth={ width}
-            cheight={ height}
+            cwidth={1.5* width}
+            cheight={1.5* height}
             data={adjusted}
             fixedData={crime}
             setSelected={setSelected}
           />}
         </div>
       </div>
-      <div className={"side_by_side"}>
+
+      <p>
+        Another way of representing how strictly correlated crime rates are with other factors (education, immigration, poverty, unemployment) is via an interactive <i>scatter plot</i>. 
+        Here each dot represents a department, and the y axis is stabilized on the crime. 
+
+        Department number 1 is Ain, departemnt number 95 is Val-d'Oise. 
+
+        The biggest cities are the following, with the corresponding departments:
+
+        <ul>
+          <li>Paris, 75</li>
+          <li>Lyon, 69</li>
+          <li>Marseille, 13</li>
+          <li>Toulouse, 31</li>
+          <li>Bordeaux, 33 </li>
+          <li>Nice, 06</li>
+        </ul>
+
+        It is evident from the plot how unemployment rate is, for example, another factor stricty correlated to crime rate in France.
+      </p>
+
+      <div className={"center"}>
         <div className={"section"}>
-          {crime && scatterPlotData && (
-            <ScatterPlot
-              cwidth={width}
-              cheight={height}
-              crime={crime}
-              data={scatterPlotData}
-            />
-          )}
-        </div>
+
         <div className={"section"}>
           <select
             value={scatterPlotSelection}
@@ -404,7 +419,19 @@ function App() {
             ))}
           </select>
         </div>
+
+          {crime && scatterPlotData && (
+            <ScatterPlot
+              cwidth={1.5*width}
+              cheight={1.5*height}
+              crime={crime}
+              data={scatterPlotData}
+            />
+          )}
+        </div>
+        
       </div>
+    
     </div>
   );
 }

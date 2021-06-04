@@ -1,6 +1,23 @@
 .App p {
-  margin: 1.2em auto 0.8em;
-  max-width: 60em;
+  margin: 2em auto 0.8em;
+  max-width: 50em;
+}
+
+body {
+  background-color: #dddddd;
+  }
+h1 {
+  color: #f76300;
+  font-family: arial;
+}
+h2 {
+  color: #f76300;
+  font-family: arial;
+}
+
+p {
+  color: #3d3d3d;
+  font-family: arial;
 }
 
 .App .side_by_side {
@@ -23,4 +40,8 @@
   justify-content: center;
   flex-direction: column;
   display: flex;
+}
+
+body {
+  text-align: center;
 }
