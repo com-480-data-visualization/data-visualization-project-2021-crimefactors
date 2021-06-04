@@ -31,7 +31,7 @@ interface populationDataPoint {
 
 function App() {
   const [map, setMap] = useState<Departement | null>(null);
-  const [crime, setCrime] = useState<Array<crimeDataPoint> | null>(null);
+  const [crime_absolute, setCrime] = useState<Array<crimeDataPoint> | null>(null);
   const [migrants, setMigrants] =
     useState<Array<migrantDataPoint> | null>(null);
   const [population, setPopulation] =
@@ -45,7 +45,7 @@ function App() {
 
   const [complet, setComplet] = useState<d3.DSVRowArray<string> | null>(null);
   let finalOptionMap: Map<string, Array<dataPoint>> | null = useMemo(() => {
-    if (complet && poverty && migrants) {
+    if (complet && poverty && migrants && crime_absolute) {
       let temp = new Map();
       temp.set(
         "Population 2017",
@@ -96,24 +96,38 @@ function App() {
           value: parseInt(d["P07_POP"]!, 10) / parseInt(d["SUPERF"]!, 10),
         }))
       );
+      temp.set("Poverty rate 2017", poverty);
       temp.set(
-        "Poverty rate 2017",
-        poverty
+        "Taux d'activité 2007",
+        complet.map((d) => ({
+          code: d["DEPARTEMENT"]!,
+          value: parseInt(d["C07_ACT1564"]!, 10) / parseInt(d["P07_POP"]!, 10),
+        }))
       );
-      temp.set("Taux d'activité 2007", complet.map((d) => ({
-        code: d["DEPARTEMENT"]!,
-        value: parseInt(d["C07_ACT1564"]!, 10) / parseInt(d["P07_POP"]!, 10),
-      })))
 
-      temp.set("Taux de chomage 2007", complet.map((d) => ({
-        code: d["DEPARTEMENT"]!,
-        value: parseInt(d["P07_HCHOM1564"]!, 10) / parseInt(d["P07_POP"]!, 10),
-      })))
+      temp.set(
+        "Taux de chomage 2007",
+        complet.map((d) => ({
+          code: d["DEPARTEMENT"]!,
+          value:
+            parseInt(d["P07_HCHOM1564"]!, 10) / parseInt(d["P07_POP"]!, 10),
+        }))
+      );
 
-      temp.set("Taux d'immigration", migrants.map((d, i) => ({code:d.code, value : complet[i][""]})))
-
-      
-      
+      temp.set(
+        "Taux d'immigration 2017",
+        migrants.map((d, i) => ({
+          code: d.code,
+          value: d.value / parseInt(complet[i]["P17_POP"]!, 10),
+        }))
+      );
+      temp.set(
+        "Crimerate 2017",
+        crime_absolute.map((d, i) => ({
+          code: d.code,
+          value:  d.value / parseInt(complet[i]["P17_POP"]!, 10),
+        }))
+      );
 
       complet.map((d) => console.log(d));
       console.log("finished", temp);
@@ -123,19 +137,23 @@ function App() {
     }
   }, [complet, poverty, migrants]);
 
-  const options = ["population", "immigration", "poverty", "school success", "unemployed"];
+  const options = [
+    "population",
+    "immigration",
+    "poverty",
+    "school success",
+    "unemployed",
+  ];
 
   let optionMap = new Map();
   optionMap.set("population", population);
   optionMap.set("immigration", migrants);
   optionMap.set("poverty", poverty);
   optionMap.set("school success", bac);
-  if (finalOptionMap){
-    optionMap.set("unemployed", finalOptionMap.get("Taux de chomage 2007"))
+  if (finalOptionMap) {
+    optionMap.set("unemployed", finalOptionMap.get("Taux de chomage 2007"));
   }
-  
 
-  
   console.log("test");
 
   useEffect(() => {
@@ -231,11 +249,11 @@ function App() {
   const [model, setModel] = useState<any>(null);
 
   useEffect(() => {
-    if (migrants && population && crime && poverty && bac) {
+    if (migrants && population && crime_absolute && poverty && bac) {
       const sorted_population = population
         .sort((d1, d2) => d1.code.localeCompare(d2.code))
         .map((d) => d.value);
-      const b = crime
+      const b = crime_absolute
         .sort((d1, d2) => d1.code.localeCompare(d2.code))
         .map((d, i) => d.value / sorted_population[i]);
       const sorted_migrants = migrants
@@ -276,19 +294,22 @@ function App() {
         setModel(null);
       }
     }
-  }, [population, migrants, crime, checkboxes, poverty, bac]);
+  }, [population, migrants, crime_absolute, checkboxes, poverty, bac]);
   useEffect(() => {
-    if (model && crime) {
-      console.log("model and population", model.resid, crime);
+    if (model && crime_absolute) {
+      console.log("model and population", model.resid, crime_absolute);
       setAdjusted(
-        crime
+        crime_absolute
           .sort((d1, d2) => d1.code.localeCompare(d2.code))
-          .map((d, i) => ({ value: d.value + model.resid[i], code: d.code }))
+          .map((d, i) => {
+            console.log("remainig", model.resid[i] / d.value);
+            return { value: d.value + model.resid[i], code: d.code };
+          })
       );
-    } else if (crime) {
-      setAdjusted(crime);
+    } else if (crime_absolute) {
+      setAdjusted(crime_absolute);
     }
-  }, [model, crime]);
+  }, [model, crime_absolute]);
 
   const [width] = useState(600);
   const [height] = useState(500);
@@ -298,14 +319,10 @@ function App() {
 
   return (
     <div className="App">
-      <h1>
- 
-        CRIME in FRANCE
-      
-      </h1>
+      <h1>CRIME in FRANCE</h1>
       <h2>
         What factors determine and influence crime rates in the French nation?
-      </h2> 
+      </h2>
       <p>
         As a political argument, often these two maps are shown next to each other to limit immigration, arguing that immigrants
         are responsible for the crime in France. Hover over the Immigration map to find out the department number for each section on the map. 
@@ -329,7 +346,11 @@ function App() {
         </div>
         <div className={"section"}>
           <h3>Number of Crimes</h3>
+<<<<<<< HEAD
           <Metropole carte={map} cwidth={width} cheight={height} data={crime}  />
+=======
+          <Metropole carte={map} cwidth={width} cheight={height} data={crime_absolute} />
+>>>>>>> 2f4cfa1f124bee60023aa26e9b01695c5728721d
         </div>
       </div>
       <p>
@@ -371,6 +392,7 @@ function App() {
           The ratio of crime <i>variance</i> predicted by the factor you just selected is: {model && model.R2} 
         </h4>
         <div className={"section"}>
+<<<<<<< HEAD
           {map && adjusted && crime && <Adjusted
             carte={map}
             cwidth={1.5* width}
@@ -379,6 +401,18 @@ function App() {
             fixedData={crime}
             setSelected={setSelected}
           />}
+=======
+          {map && adjusted && crime_absolute && (
+            <Adjusted
+              carte={map}
+              cwidth={width}
+              cheight={height}
+              data={adjusted}
+              fixedData={crime_absolute}
+              setSelected={setSelected}
+            />
+          )}
+>>>>>>> 2f4cfa1f124bee60023aa26e9b01695c5728721d
         </div>
       </div>
 
@@ -404,7 +438,19 @@ function App() {
 
       <div className={"center"}>
         <div className={"section"}>
+<<<<<<< HEAD
 
+=======
+          {crime_absolute && scatterPlotData && (
+            <ScatterPlot
+              cwidth={width}
+              cheight={height}
+              crime={crime_absolute}
+              data={scatterPlotData}
+            />
+          )}
+        </div>
+>>>>>>> 2f4cfa1f124bee60023aa26e9b01695c5728721d
         <div className={"section"}>
           <select
             value={scatterPlotSelection}
