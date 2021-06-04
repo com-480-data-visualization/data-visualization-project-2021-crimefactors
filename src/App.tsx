@@ -296,7 +296,7 @@ function App() {
     }
   }, [population, migrants, crime_absolute, checkboxes, poverty, bac]);
   useEffect(() => {
-    if (model && crime_absolute) {
+    if (model && crime_absolute && population) {
       console.log("model and population", model.resid, crime_absolute);
       setAdjusted(
         crime_absolute
@@ -304,12 +304,14 @@ function App() {
           .map((d, i) => {
             console.log("remainig", model.resid[i] / d.value);
             return { value: d.value + model.resid[i], code: d.code };
+            // return { value: d.value/population[i].value + model.resid[i], code: d.code };
           })
       );
     } else if (crime_absolute) {
       setAdjusted(crime_absolute);
     }
   }, [model, crime_absolute]);
+  // }, [model, crime_absolute, population]);
 
   const [width] = useState(600);
   const [height] = useState(500);
@@ -346,11 +348,7 @@ function App() {
         </div>
         <div className={"section"}>
           <h3>Number of Crimes</h3>
-<<<<<<< HEAD
-          <Metropole carte={map} cwidth={width} cheight={height} data={crime}  />
-=======
           <Metropole carte={map} cwidth={width} cheight={height} data={crime_absolute} />
->>>>>>> 2f4cfa1f124bee60023aa26e9b01695c5728721d
         </div>
       </div>
       <p>
@@ -358,7 +356,7 @@ function App() {
         Correlation is not causation and there might be hidden causes...
       </p>
       <p>
-        The most obvious other paramter that can be used as a counter-argument is POPULATION. 
+        The most obvious other paramter that can be used as a counter-argument is population. 
         When the population density is higher, there are higher chances of having people who live in precarious conditions, and are therefore more likely to commit crimes.
 
       </p>
@@ -385,34 +383,34 @@ function App() {
           {/* <p>The colorscale is changing.</p> */}
 
           <p></p>
-
+          okokok
           {Object.keys(checkboxes).map((option: string) => Checkbox(option))}
         </div>
         <h4>
-          The ratio of crime <i>variance</i> predicted by the factor you just selected is: {model && model.R2} 
+          The ratio of crimes <i>variance</i> predicted by the factor you just selected is: {model && model.R2} 
         </h4>
         <div className={"section"}>
-<<<<<<< HEAD
-          {map && adjusted && crime && <Adjusted
+
+          {/* {map && adjusted && crime && <Adjusted
             carte={map}
             cwidth={1.5* width}
             cheight={1.5* height}
             data={adjusted}
             fixedData={crime}
             setSelected={setSelected}
-          />}
-=======
+          />} */}
+
           {map && adjusted && crime_absolute && (
             <Adjusted
               carte={map}
-              cwidth={width}
-              cheight={height}
+              cwidth={1.5*width}
+              cheight={1.5*height}
               data={adjusted}
               fixedData={crime_absolute}
               setSelected={setSelected}
             />
           )}
->>>>>>> 2f4cfa1f124bee60023aa26e9b01695c5728721d
+
         </div>
       </div>
 
@@ -438,19 +436,6 @@ function App() {
 
       <div className={"center"}>
         <div className={"section"}>
-<<<<<<< HEAD
-
-=======
-          {crime_absolute && scatterPlotData && (
-            <ScatterPlot
-              cwidth={width}
-              cheight={height}
-              crime={crime_absolute}
-              data={scatterPlotData}
-            />
-          )}
-        </div>
->>>>>>> 2f4cfa1f124bee60023aa26e9b01695c5728721d
         <div className={"section"}>
           <select
             value={scatterPlotSelection}
@@ -466,20 +451,21 @@ function App() {
           </select>
         </div>
 
-          {crime && scatterPlotData && (
+          {crime_absolute && scatterPlotData && (
             <ScatterPlot
               cwidth={1.5*width}
               cheight={1.5*height}
-              crime={crime}
+              crime={crime_absolute}
               data={scatterPlotData}
             />
+            
           )}
         </div>
         
       </div>
     
     </div>
-  );
+  )
 }
 
 export default App;
