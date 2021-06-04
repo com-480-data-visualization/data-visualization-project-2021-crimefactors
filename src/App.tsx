@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Departement } from "./assets/map";
 import { Metropole } from "./france";
+import { Metropole2 } from "./france2";
 import { ScatterPlot } from "./scatter";
 import { jStat } from "jstat";
 import d3 from "./assets/d3";
@@ -36,14 +37,58 @@ function App() {
   const [adjusted, setAdjusted] = useState<Array<dataPoint> | null>(null);
   const [poverty, setPoverty] = useState<Array<dataPoint> | null>(null);
   const [bac, setBac] = useState<Array<dataPoint> | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
 
   const options = ["population", "immigration", "poverty", "school success"];
+
+  const [complet, setComplet] = useState<d3.DSVRowArray<string> | null>(null);
 
   let optionMap = new Map();
   optionMap.set("population", population);
   optionMap.set("immigration", migrants);
   optionMap.set("poverty", poverty);
   optionMap.set("school success", bac);
+
+  let finalOptionMap: Map<string, Array<dataPoint>> | null = useMemo(() => {
+    if (complet) {
+      let temp = new Map();
+      temp.set(
+        "population 2017",
+        complet.map((d) => ({
+          code: d["DEPARTEMENT"]!,
+          value: parseInt(d["P17_POP"]!, 10),
+        }))
+      );
+      temp.set(
+        "population 2012",
+        complet.map((d) => ({
+          code: d["DEPARTEMENT"]!,
+          value: parseInt(d["P12_POP"]!, 10),
+        }))
+      );
+      temp.set(
+        "population 2007",
+        complet.map((d) => ({
+          
+          code: d["DEPARTEMENT"]!,
+          value: parseInt(d["P07_POP"]!, 10),
+        }))
+        
+      );
+      complet.map((d) => console.log(d))
+      console.log("finished", temp);
+      return temp;
+    } else {
+      return null;
+    }
+  }, [complet]);
+  console.log("test");
+
+  useEffect(() => {
+    d3.csv("complet.csv").then((data) => {
+      setComplet(data);
+    });
+  }, []);
 
   useEffect(() => {
     fetch("departements.geojson")
@@ -202,17 +247,20 @@ function App() {
       <p>
         We often two maps of France shown side by side as a political argument.
         However limiting ourselves to this limits our understanding. What if
-        other factors are at play ?
+        other factors are at play ? {selected}
       </p>
       <div className={"side_by_side"}>
         <div className={"section"}>
           <h1>Immigrant population</h1>
-          <Metropole
-            carte={map}
-            cwidth={width}
-            cheight={height}
-            data={migrants}
-          />
+          {map && migrants && (
+            <Metropole2
+              carte={map}
+              cwidth={width}
+              cheight={height}
+              data={migrants}
+              setSelected={setSelected}
+            />
+          )}
         </div>
         <div className={"section"}>
           <h1>Number of Crimes</h1>
@@ -270,12 +318,14 @@ function App() {
       </div>
       <div className={"side_by_side"}>
         <div className={"section"}>
-          <ScatterPlot
-            cwidth={width}
-            cheight={height}
-            crime={crime}
-            data={scatterPlotData}
-          />
+          {crime && scatterPlotData && (
+            <ScatterPlot
+              cwidth={width}
+              cheight={height}
+              crime={crime}
+              data={scatterPlotData}
+            />
+          )}
         </div>
         <div className={"section"}>
           <select
