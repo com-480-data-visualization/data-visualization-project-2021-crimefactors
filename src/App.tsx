@@ -39,49 +39,101 @@ function App() {
   const [bac, setBac] = useState<Array<dataPoint> | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
 
-  const options = ["population", "immigration", "poverty", "school success"];
+  
 
   const [complet, setComplet] = useState<d3.DSVRowArray<string> | null>(null);
-
-  let optionMap = new Map();
-  optionMap.set("population", population);
-  optionMap.set("immigration", migrants);
-  optionMap.set("poverty", poverty);
-  optionMap.set("school success", bac);
-
   let finalOptionMap: Map<string, Array<dataPoint>> | null = useMemo(() => {
-    if (complet) {
+    if (complet && poverty && migrants) {
       let temp = new Map();
       temp.set(
-        "population 2017",
+        "Population 2017",
         complet.map((d) => ({
           code: d["DEPARTEMENT"]!,
           value: parseInt(d["P17_POP"]!, 10),
         }))
       );
       temp.set(
-        "population 2012",
+        "Population 2012",
         complet.map((d) => ({
           code: d["DEPARTEMENT"]!,
           value: parseInt(d["P12_POP"]!, 10),
         }))
       );
       temp.set(
-        "population 2007",
+        "Population 2007",
         complet.map((d) => ({
-          
           code: d["DEPARTEMENT"]!,
           value: parseInt(d["P07_POP"]!, 10),
         }))
-        
       );
-      complet.map((d) => console.log(d))
+      temp.set(
+        "Superfecy",
+        complet.map((d) => ({
+          code: d["DEPARTEMENT"]!,
+          value: parseInt(d["SUPERF"]!, 10),
+        }))
+      );
+      temp.set(
+        "Population density 2017",
+        complet.map((d) => ({
+          code: d["DEPARTEMENT"]!,
+          value: parseInt(d["P17_POP"]!, 10) / parseInt(d["SUPERF"]!, 10),
+        }))
+      );
+      temp.set(
+        "Population density 2012",
+        complet.map((d) => ({
+          code: d["DEPARTEMENT"]!,
+          value: parseInt(d["P12_POP"]!, 10) / parseInt(d["SUPERF"]!, 10),
+        }))
+      );
+      temp.set(
+        "Population density 2007",
+        complet.map((d) => ({
+          code: d["DEPARTEMENT"]!,
+          value: parseInt(d["P07_POP"]!, 10) / parseInt(d["SUPERF"]!, 10),
+        }))
+      );
+      temp.set(
+        "Poverty rate 2017",
+        poverty
+      );
+      temp.set("Taux d'activité 2007", complet.map((d) => ({
+        code: d["DEPARTEMENT"]!,
+        value: parseInt(d["C07_ACT1564"]!, 10) / parseInt(d["P07_POP"]!, 10),
+      })))
+
+      temp.set("Taux de chomage 2007", complet.map((d) => ({
+        code: d["DEPARTEMENT"]!,
+        value: parseInt(d["P07_HCHOM1564"]!, 10) / parseInt(d["P07_POP"]!, 10),
+      })))
+
+      temp.set("Taux d'immigration", migrants.map((d, i) => ({code:d.code, value : complet[i][""]})))
+
+      
+      
+
+      complet.map((d) => console.log(d));
       console.log("finished", temp);
       return temp;
     } else {
       return null;
     }
-  }, [complet]);
+  }, [complet, poverty, migrants]);
+
+  const options = ["population", "immigration", "poverty", "school success", "unemployed"];
+
+  let optionMap = new Map();
+  optionMap.set("population", population);
+  optionMap.set("immigration", migrants);
+  optionMap.set("poverty", poverty);
+  optionMap.set("school success", bac);
+  if (finalOptionMap){
+    optionMap.set("unemployed", finalOptionMap.get("Taux de chomage 2007"))
+  }
+  
+
+  
   console.log("test");
 
   useEffect(() => {
@@ -310,8 +362,8 @@ function App() {
         <div className={"section"}>
           <Metropole
             carte={map}
-            cwidth={width}
-            cheight={height}
+            cwidth={ width}
+            cheight={ height}
             data={adjusted}
           />
         </div>
