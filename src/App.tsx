@@ -6,6 +6,7 @@ import { ScatterPlot } from "./scatter";
 import { jStat } from "jstat";
 import d3 from "./assets/d3";
 import "./App.css";
+import { Adjusted } from "./adjusted";
 
 interface dataPoint {
   code: string;
@@ -360,12 +361,14 @@ function App() {
           {Object.keys(checkboxes).map((option: string) => Checkbox(option))}
         </div>
         <div className={"section"}>
-          <Metropole
+          {map && adjusted && crime && <Adjusted
             carte={map}
             cwidth={ width}
             cheight={ height}
             data={adjusted}
-          />
+            fixedData={crime}
+            setSelected={setSelected}
+          />}
         </div>
       </div>
       <div className={"side_by_side"}>
