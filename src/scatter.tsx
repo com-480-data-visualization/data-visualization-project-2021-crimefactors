@@ -36,11 +36,12 @@ export function ScatterPlot(props: prop) {
     .range([height, 0]);
 
   let data = props.crime.map((d, i) => ({
+    code: d.code,
     crime: d.value,
     factor: props.data![i].value,
   }));
 
-  const [lightness, setLightness] = useState(50)
+  const [selected, setSelected] = useState<string | null>(null)
 
   return (
     <div>
@@ -54,21 +55,34 @@ export function ScatterPlot(props: prop) {
       >
         <g transform={`translate(${[margin.left, margin.top].join(",")})`}></g>
         <g transform={`translate(${[0, height].join(",")})`}>
-        <Axis axisCreator={d3.axisBottom(x).ticks(5)}></Axis>
+          <Axis axisCreator={d3.axisBottom(x).ticks(5)}></Axis>
         </g>
-        
+        <text>Test</text>
         <Axis axisCreator={d3.axisLeft(y).ticks(5)}></Axis>
         <g>
-          {data.map((d) => (
-            <circle
-              cx={x(d.factor)}
-              cy={y(d.crime)}
-              r={3}
-              style={{ fill: `hsl(270, 100%, ${lightness}%)`, transition:"fill 2s" }}
-              onMouseOver={() => setLightness(75)}
-              onMouseLeave={()=> setLightness(50)}
-            ></circle>
-          ))}
+          {data.map((d) => {
+            return (
+              <g>
+                {selected===d.code && (
+                  <text x={x(d.factor)} y={y(d.crime)}>
+                    {d.code}
+                  </text>
+                )}
+                <circle
+                  cx={x(d.factor)}
+                  cy={y(d.crime)}
+                  r={3}
+                  style={{
+                    fill: `hsl(270, 100%,50%)`,
+                    transition: "fill 2s",
+                  }}
+                  onMouseOver={() => setSelected(d.code)}
+                  onMouseLeave={() => setSelected(null)}
+                  onClick={() => alert(d.code)}
+                ></circle>
+              </g>
+            );
+          })}
         </g>
       </svg>
     </div>
