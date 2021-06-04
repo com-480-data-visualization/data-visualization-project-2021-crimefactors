@@ -244,6 +244,14 @@ function App() {
 
   return (
     <div className="App">
+      <h1>
+ 
+        CRIME in FRANCE
+      
+      </h1>
+      <h2>
+        What factors determine and influence crime rates in the French nation?
+      </h2> 
       <p>
         We often two maps of France shown side by side as a political argument.
         However limiting ourselves to this limits our understanding. What if
@@ -251,7 +259,7 @@ function App() {
       </p>
       <div className={"side_by_side"}>
         <div className={"section"}>
-          <h1>Immigrant population</h1>
+          <h3>Immigrant population</h3>
           {map && migrants && (
             <Metropole2
               carte={map}
@@ -263,7 +271,7 @@ function App() {
           )}
         </div>
         <div className={"section"}>
-          <h1>Number of Crimes</h1>
+          <h3>Number of Crimes</h3>
           <Metropole carte={map} cwidth={width} cheight={height} data={crime} />
         </div>
       </div>
@@ -278,7 +286,7 @@ function App() {
         an area, there will probably be more migrants and more crime.
       </p>
       <div className={"center"}>
-        <h1>Population</h1>
+        <h3>Population</h3>
         <Metropole
           carte={map}
           cwidth={2 * width}
