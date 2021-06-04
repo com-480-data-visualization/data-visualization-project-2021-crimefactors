@@ -282,7 +282,9 @@ function App() {
       setAdjusted(
         crime
           .sort((d1, d2) => d1.code.localeCompare(d2.code))
-          .map((d, i) => ({ value: d.value + model.resid[i], code: d.code }))
+          .map((d, i) => {
+            console.log("remainig", model.resid[i]/d.value)
+            return ({ value: d.value + model.resid[i], code: d.code })})
       );
     } else if (crime) {
       setAdjusted(crime);
